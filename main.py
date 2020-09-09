@@ -81,6 +81,12 @@ def cancel(message):
         bot.send_message(538231919, f'Cancel: {e}')
 
 
+@bot.message_handler(commands=["help"])
+def help(message):
+    bot.reply_to(message, '/start, чтобы начать партию. Если нужно обнулить партию, то нажмите ещё раз'
+                          ' /start. /cancel, чтобы сбросить весь счёт.')
+
+
 def plus_point(message, point):
     global count, user1, user2, user1_score, user2_score, part, going_game, total_score
     user_id = str(message.chat.id)
