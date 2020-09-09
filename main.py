@@ -116,6 +116,7 @@ def plus_point(message, point):
 
                 if current_score_user1 == 2:
                     bot.send_message(user_id, f'{user1} выиграл со счётом {total_score[user_id]}')
+                    del total_score[user_id]
                 else:
                     bot.send_message(user_id, f'Счёт {total_score[user_id]}, сейчас начнётся новая партия')
                     #bot.send_message(user_id, f'Счёт {total_score[user_id]}')
@@ -125,6 +126,7 @@ def plus_point(message, point):
                 bot.send_message(user_id, f'Счёт {total_score[user_id]}, сейчас начнётся новая партия')
                 # bot.send_message(user_id, f'Счёт {total_score[user_id]}')
                 start_game(message)
+
             config.set('Settings', 'total_score', str(total_score))
             config.set('Settings', 'old_messages', str(old_messages))
 
@@ -140,6 +142,7 @@ def plus_point(message, point):
 
                 if current_score_user2 == 2:
                     bot.send_message(user_id, f'{user2} выиграл со счётом {total_score[user_id]}')
+                    del total_score[user_id]
                 else:
                     bot.send_message(user_id, f'Счёт {total_score[user_id]}, сейчас начнётся новая партия')
                     # bot.send_message(user_id, f'Счёт {total_score[user_id]}')
