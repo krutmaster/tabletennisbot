@@ -17,6 +17,7 @@ user1 = 'игрок 1'
 user2 = 'игрок 2'
 count = {}
 part = {}
+last_point = {}
 total_score = str_in_dict(config.get('Settings', 'total_score'))
 old_messages = str_in_dict(config.get('Settings', 'old_messages'))
 bot = telebot.TeleBot(token)
@@ -51,6 +52,7 @@ def start_game(message):
         keyboard = telebot.types.InlineKeyboardMarkup()
         keyboard.row(telebot.types.InlineKeyboardButton(user1_score[user_id], callback_data='plus_point_1'),
                      telebot.types.InlineKeyboardButton(user2_score[user_id], callback_data='plus_point_2'))
+        keyboard.add(telebot.types.InlineKeyboardButton('Шаг назад', callback_data='step_back'))
         old_message = bot.send_message(user_id, status, reply_markup=keyboard)
         old_messages[user_id] = old_message.message_id
         config.set('Settings', 'old_messages', str(old_messages))
@@ -88,7 +90,7 @@ def help(message):
 
 
 def plus_point(message, point):
-    global count, user1, user2, user1_score, user2_score, part, going_game, total_score
+    global count, user1, user2, user1_score, user2_score, part, total_score
     user_id = str(message.chat.id)
 
     try:
@@ -178,6 +180,7 @@ def plus_point(message, point):
             keyboard = telebot.types.InlineKeyboardMarkup()
             keyboard.row(telebot.types.InlineKeyboardButton(user1_score[user_id], callback_data='plus_point_1'),
                          telebot.types.InlineKeyboardButton(user2_score[user_id], callback_data='plus_point_2'))
+            keyboard.add(telebot.types.InlineKeyboardButton('Шаг назад', callback_data='step_back'))
             old_message = bot.send_message(message.chat.id, status, reply_markup=keyboard)
             old_messages[user_id] = old_message.message_id
             config.set('Settings', 'old_messages', str(old_messages))
@@ -189,13 +192,36 @@ def plus_point(message, point):
         bot.send_message(538231919, f'Plus point: {e}')
 
 
+def step_back(message, point):
+    global last_point
+    user_id = str(message.chat.id)
+
+    try:
+
+        if not point:
+            user1_score[user_id] -= 2
+        else:
+            user2_score[user_id] -= 2
+
+        plus_point(message, last_point[user_id])
+
+    except Exception as e:
+        bot.send_message(538231919, f'Step back: {e}')
+
+
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
+    global last_point
+    user_id = str(call.message.chat.id)
 
     if call.data == "plus_point_1":
         plus_point(call.message, 0)
+        last_point[user_id] = 0
     elif call.data == 'plus_point_2':
         plus_point(call.message, 1)
+        last_point[user_id] = 1
+    elif call.data == 'step_back':
+        step_back(call.message, last_point[user_id])
 
 
 if __name__ == '__main__':
