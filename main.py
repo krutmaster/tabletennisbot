@@ -62,6 +62,25 @@ def start_game(message):
         bot.send_message(538231919, f'Start game: {e}')
 
 
+@bot.message_handler(commands=["cancel"])
+def cancel(message):
+    global config, total_score
+    user_id = str(message.chat.id)
+
+    try:
+
+        try:
+            bot.delete_message(user_id, old_messages[user_id])
+            del old_messages[user_id]
+        except Exception:
+            pass
+
+        del total_score[user_id]
+        bot.reply_to(message, 'Счёт обнулён')
+    except Exception as e:
+        bot.send_message(538231919, f'Cancel: {e}')
+
+
 def plus_point(message, point):
     global count, user1, user2, user1_score, user2_score, part, going_game, total_score
     user_id = str(message.chat.id)
