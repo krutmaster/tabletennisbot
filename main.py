@@ -23,7 +23,7 @@ bot = telebot.TeleBot(token)
 
 
 @bot.message_handler(commands=["start"])
-def start_game(message, num=None):
+def start_game(message):
     global user1_score, user2_score, user1, user2, count, part, old_messages, config
     user_id = str(message.chat.id)
 
@@ -35,10 +35,6 @@ def start_game(message, num=None):
         except Exception:
             pass
 
-        if not num:
-            num = int(message.text.split()[1]) - 1
-
-        going_game[user_id] = num
         user1_score[user_id] = 0
         user2_score[user_id] = 0
         split = (len(user1) - 1) * ' ' + '   '
@@ -63,7 +59,6 @@ def start_game(message, num=None):
             config.write(config_file)
 
     except Exception as e:
-        bot.reply_to(message, 'Команда введена неправильно, укажите номер пары из /rating')
         bot.send_message(538231919, f'Start game: {e}')
 
 
