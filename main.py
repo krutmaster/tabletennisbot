@@ -96,7 +96,7 @@ def cancel(message):
 
         del total_score[user_id]
         keyboard = telebot.types.ReplyKeyboardRemove()
-        bot.reply_to(message, 'Счёт обнулён', keyboard=keyboard)
+        bot.reply_to(message, 'Счёт обнулён', reply_markup=keyboard)
     except Exception as e:
         bot.send_message(538231919, f'Cancel: {e}')
 
@@ -136,14 +136,14 @@ def plus_point(message, point):
         keyboard = telebot.types.ReplyKeyboardRemove()
 
         if user1_score[user_id] == 11 or (user2_score[user_id] > 10 and (user1_score[user_id] - user2_score[user_id]) == 2):
-            bot.send_message(user_id, f'{user1} WIN!')
+            bot.send_message(user_id, f'{user1} WIN!', reply_markup=keyboard)
 
             if user_id in total_score:
                 current_score_user1 = int(total_score[user_id][0]) + 1
                 total_score[user_id] = str(current_score_user1) + total_score[user_id][1:]
 
                 if current_score_user1 == 2:
-                    bot.send_message(user_id, f'{user1} выиграл со счётом {total_score[user_id]}', keyboard=keyboard)
+                    bot.send_message(user_id, f'{user1} выиграл со счётом {total_score[user_id]}')
                     del total_score[user_id]
                 else:
                     message(user_id, f'Счёт {total_score[user_id]}, сейчас начнётся новая партия')
@@ -162,7 +162,7 @@ def plus_point(message, point):
                 config.write(config_file)
 
         elif user2_score[user_id] == 11 or (user1_score[user_id] > 10 and (user2_score[user_id] - user1_score[user_id]) == 2):
-            bot.send_message(user_id, f'{user2} WIN!')
+            bot.send_message(user_id, f'{user2} WIN!', reply_markup=keyboard)
 
             if user_id in total_score:
                 current_score_user2 = int(total_score[user_id][2]) + 1
