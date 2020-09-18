@@ -23,6 +23,22 @@ old_messages = str_in_dict(config.get('Settings', 'old_messages'))
 bot = telebot.TeleBot(token)
 
 
+@bot.message_handler(commands=["left"])
+def left_user(message):
+    global last_point
+    user_id = str(message.chat.id)
+    plus_point(message, 0)
+    last_point[user_id] = 0
+
+
+@bot.message_handler(commands=["right"])
+def right_user(message):
+    global last_point
+    user_id = str(message.chat.id)
+    plus_point(message, 1)
+    last_point[user_id] = 1
+
+
 @bot.message_handler(commands=["start"])
 def start_game(message):
     global user1_score, user2_score, user1, user2, count, part, old_messages, config
@@ -50,10 +66,10 @@ def start_game(message):
         else:
             status += f'{len(user1) * " "}   {smile}'
 
-        keyboard = telebot.types.InlineKeyboardMarkup()
-        keyboard.row(telebot.types.InlineKeyboardButton(user1_score[user_id], callback_data='plus_point_1'),
-                     telebot.types.InlineKeyboardButton(user2_score[user_id], callback_data='plus_point_2'))
-        keyboard.add(telebot.types.InlineKeyboardButton(smile_back, callback_data='step_back'))
+        keyboard = telebot.types.ReplyKeyboardMarkup()
+        keyboard.row(telebot.types.KeyboardButton(f'/left {user1}'),
+                     telebot.types.KeyboardButton(f'/right {user2}'))
+        keyboard.add(telebot.types.KeyboardButton(f'/step_back {smile_back}'))
         old_message = bot.send_message(user_id, status, reply_markup=keyboard)
         old_messages[user_id] = old_message.message_id
         config.set('Settings', 'old_messages', str(old_messages))
@@ -79,7 +95,8 @@ def cancel(message):
             pass
 
         del total_score[user_id]
-        bot.reply_to(message, 'Счёт обнулён')
+        keyboard = telebot.types.ReplyKeyboardRemove()
+        bot.reply_to(message, 'Счёт обнулён', keyboard=keyboard)
     except Exception as e:
         bot.send_message(538231919, f'Cancel: {e}')
 
@@ -116,6 +133,8 @@ def plus_point(message, point):
         except Exception:
             pass
 
+        keyboard = telebot.types.ReplyKeyboardRemove()
+
         if user1_score[user_id] == 11 or (user2_score[user_id] > 10 and (user1_score[user_id] - user2_score[user_id]) == 2):
             bot.send_message(user_id, f'{user1} WIN!')
 
@@ -124,10 +143,10 @@ def plus_point(message, point):
                 total_score[user_id] = str(current_score_user1) + total_score[user_id][1:]
 
                 if current_score_user1 == 2:
-                    bot.send_message(user_id, f'{user1} выиграл со счётом {total_score[user_id]}')
+                    bot.send_message(user_id, f'{user1} выиграл со счётом {total_score[user_id]}', keyboard=keyboard)
                     del total_score[user_id]
                 else:
-                    bot.send_message(user_id, f'Счёт {total_score[user_id]}, сейчас начнётся новая партия')
+                    message(user_id, f'Счёт {total_score[user_id]}, сейчас начнётся новая партия')
                     #bot.send_message(user_id, f'Счёт {total_score[user_id]}')
                     start_game(message)
             else:
@@ -179,10 +198,10 @@ def plus_point(message, point):
             else:
                 status += f'{len(user1) * " "}   {smile}'
 
-            keyboard = telebot.types.InlineKeyboardMarkup()
-            keyboard.row(telebot.types.InlineKeyboardButton(user1_score[user_id], callback_data='plus_point_1'),
-                         telebot.types.InlineKeyboardButton(user2_score[user_id], callback_data='plus_point_2'))
-            keyboard.add(telebot.types.InlineKeyboardButton(smile_back, callback_data='step_back'))
+            keyboard = telebot.types.ReplyKeyboardMarkup()
+            keyboard.row(telebot.types.KeyboardButton(f'/left {user1}'),
+                         telebot.types.KeyboardButton(f'/right {user2}'))
+            keyboard.add(telebot.types.KeyboardButton(f'/step_back {smile_back}'))
             old_message = bot.send_message(message.chat.id, status, reply_markup=keyboard)
             old_messages[user_id] = old_message.message_id
             config.set('Settings', 'old_messages', str(old_messages))
@@ -194,11 +213,13 @@ def plus_point(message, point):
         bot.send_message(538231919, f'Plus point: {e}')
 
 
-def step_back(message, point):
+@bot.message_handler(commands=["step_back"])
+def step_back(message):
     global last_point
     user_id = str(message.chat.id)
 
     try:
+        point = last_point[user_id]
 
         if not point:
             user1_score[user_id] -= 2
@@ -206,7 +227,6 @@ def step_back(message, point):
             user2_score[user_id] -= 2
 
         plus_point(message, last_point[user_id])
-
     except Exception as e:
         bot.send_message(538231919, f'Step back: {e}')
 
@@ -223,7 +243,7 @@ def callback_inline(call):
         plus_point(call.message, 1)
         last_point[user_id] = 1
     elif call.data == 'step_back':
-        step_back(call.message, last_point[user_id])
+        step_back(call.messag)
 
 
 if __name__ == '__main__':
