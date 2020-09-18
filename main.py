@@ -43,6 +43,7 @@ def start_game(message):
         part[user_id] = random.randint(0, 1)
         count[user_id] = 0
         smile = u"\U0001F3BE"
+        smile_back = u"\U0001F519"
 
         if not part[user_id]:
             status += f'{smile}'
@@ -52,7 +53,7 @@ def start_game(message):
         keyboard = telebot.types.InlineKeyboardMarkup()
         keyboard.row(telebot.types.InlineKeyboardButton(user1_score[user_id], callback_data='plus_point_1'),
                      telebot.types.InlineKeyboardButton(user2_score[user_id], callback_data='plus_point_2'))
-        keyboard.add(telebot.types.InlineKeyboardButton('Шаг назад', callback_data='step_back'))
+        keyboard.add(telebot.types.InlineKeyboardButton(smile_back, callback_data='step_back'))
         old_message = bot.send_message(user_id, status, reply_markup=keyboard)
         old_messages[user_id] = old_message.message_id
         config.set('Settings', 'old_messages', str(old_messages))
@@ -171,6 +172,7 @@ def plus_point(message, point):
             split = (len(user1) - len(str(user1_score[user_id]))) * ' ' + '   '
             status = f'{user1}   {user2}\n{user1_score[user_id]}{split}{user2_score[user_id]}\n'
             smile = u"\U0001F3BE"
+            smile_back = u"\U0001F519"
 
             if not part[user_id]:
                 status += f'{smile}'
@@ -180,7 +182,7 @@ def plus_point(message, point):
             keyboard = telebot.types.InlineKeyboardMarkup()
             keyboard.row(telebot.types.InlineKeyboardButton(user1_score[user_id], callback_data='plus_point_1'),
                          telebot.types.InlineKeyboardButton(user2_score[user_id], callback_data='plus_point_2'))
-            keyboard.add(telebot.types.InlineKeyboardButton('Шаг назад', callback_data='step_back'))
+            keyboard.add(telebot.types.InlineKeyboardButton(smile_back, callback_data='step_back'))
             old_message = bot.send_message(message.chat.id, status, reply_markup=keyboard)
             old_messages[user_id] = old_message.message_id
             config.set('Settings', 'old_messages', str(old_messages))
