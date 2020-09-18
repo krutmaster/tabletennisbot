@@ -2,6 +2,7 @@
 import configparser
 import random
 import telebot
+from contextlib import suppress
 
 
 def str_in_dict(dict_in_str):
@@ -46,11 +47,9 @@ def start_game(message):
 
     try:
 
-        try:
+        with suppress(Exception):
             bot.delete_message(user_id, old_messages[user_id])
             del old_messages[user_id]
-        except Exception:
-            pass
 
         user1_score[user_id] = 0
         user2_score[user_id] = 0
@@ -88,13 +87,11 @@ def cancel(message):
 
     try:
 
-        try:
+        with suppress(Exception):
             bot.delete_message(user_id, old_messages[user_id])
             del old_messages[user_id]
-        except Exception:
-            pass
+            del total_score[user_id]
 
-        del total_score[user_id]
         keyboard = telebot.types.ReplyKeyboardRemove()
         bot.reply_to(message, 'Счёт обнулён', reply_markup=keyboard)
     except Exception as e:
@@ -127,11 +124,9 @@ def plus_point(message, point):
         else:
             user2_score[user_id] += 1
 
-        try:
+        with suppress(Exception):
             bot.delete_message(user_id, old_messages[user_id])
             del old_messages[user_id]
-        except Exception:
-            pass
 
         keyboard = telebot.types.ReplyKeyboardRemove()
 
@@ -229,21 +224,6 @@ def step_back(message):
         plus_point(message, last_point[user_id])
     except Exception as e:
         bot.send_message(538231919, f'Step back: {e}')
-
-
-@bot.callback_query_handler(func=lambda call: True)
-def callback_inline(call):
-    global last_point
-    user_id = str(call.message.chat.id)
-
-    if call.data == "plus_point_1":
-        plus_point(call.message, 0)
-        last_point[user_id] = 0
-    elif call.data == 'plus_point_2':
-        plus_point(call.message, 1)
-        last_point[user_id] = 1
-    elif call.data == 'step_back':
-        step_back(call.messag)
 
 
 if __name__ == '__main__':
