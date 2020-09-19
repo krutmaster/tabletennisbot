@@ -47,7 +47,7 @@ def start_game(message):
     try:
         user1_score[user_id] = 0
         user2_score[user_id] = 0
-        split = (len(user1) - 1) * ' ' + '      '
+        split = (len(user1) - 1) * ' ' + '        '
         status = f'{user1}   {user2}\n{user1_score[user_id]}{split}{user2_score[user_id]}\n'
         part[user_id] = random.randint(0, 1)
         count[user_id] = 0
@@ -163,7 +163,7 @@ def plus_point(message, point):
                 config.write(config_file)
 
         else:
-            split = (len(user1) - len(str(user1_score[user_id]))) * ' ' + '      '
+            split = (len(user1) - 1) * ' ' + '        '
             status = f'{user1}   {user2}\n{user1_score[user_id]}{split}{user2_score[user_id]}\n'
             smile = u"\U0001F3BE"
             smile_back = u"\U0001F519"
