@@ -20,7 +20,6 @@ count = {}
 part = {}
 last_point = {}
 total_score = str_in_dict(config.get('Settings', 'total_score'))
-old_messages = str_in_dict(config.get('Settings', 'old_messages'))
 bot = telebot.TeleBot(token)
 
 
@@ -42,15 +41,10 @@ def right_user(message):
 
 @bot.message_handler(commands=["start"])
 def start_game(message):
-    global user1_score, user2_score, user1, user2, count, part, old_messages, config
+    global user1_score, user2_score, user1, user2, count, part, config
     user_id = str(message.chat.id)
 
     try:
-
-        with suppress(Exception):
-            bot.delete_message(user_id, old_messages[user_id])
-            del old_messages[user_id]
-
         user1_score[user_id] = 0
         user2_score[user_id] = 0
         split = (len(user1) - 1) * ' ' + '   '
@@ -69,13 +63,7 @@ def start_game(message):
         keyboard.row(telebot.types.KeyboardButton(f'/left {user1}'),
                      telebot.types.KeyboardButton(f'/right {user2}'))
         keyboard.add(telebot.types.KeyboardButton(f'/step_back {smile_back}'))
-        old_message = bot.send_message(user_id, status, reply_markup=keyboard)
-        old_messages[user_id] = old_message.message_id
-        config.set('Settings', 'old_messages', str(old_messages))
-
-        with open('config.ini', 'w') as config_file:
-            config.write(config_file)
-
+        bot.send_message(user_id, status, reply_markup=keyboard)
     except Exception as e:
         bot.send_message(538231919, f'Start game: {e}')
 
@@ -88,8 +76,6 @@ def cancel(message):
     try:
 
         with suppress(Exception):
-            bot.delete_message(user_id, old_messages[user_id])
-            del old_messages[user_id]
             del total_score[user_id]
 
         keyboard = telebot.types.ReplyKeyboardRemove()
@@ -124,10 +110,6 @@ def plus_point(message, point):
         else:
             user2_score[user_id] += 1
 
-        with suppress(Exception):
-            bot.delete_message(user_id, old_messages[user_id])
-            del old_messages[user_id]
-
         keyboard = telebot.types.ReplyKeyboardRemove()
 
         if user1_score[user_id] == 11 or (user2_score[user_id] > 10 and (user1_score[user_id] - user2_score[user_id]) == 2):
@@ -141,7 +123,7 @@ def plus_point(message, point):
                     bot.send_message(user_id, f'{user1} выиграл со счётом {total_score[user_id]}')
                     del total_score[user_id]
                 else:
-                    message(user_id, f'Счёт {total_score[user_id]}, сейчас начнётся новая партия')
+                    bot.send_message(user_id, f'Счёт {total_score[user_id]}, сейчас начнётся новая партия')
                     #bot.send_message(user_id, f'Счёт {total_score[user_id]}')
                     start_game(message)
             else:
@@ -151,7 +133,6 @@ def plus_point(message, point):
                 start_game(message)
 
             config.set('Settings', 'total_score', str(total_score))
-            config.set('Settings', 'old_messages', str(old_messages))
 
             with open('config.ini', 'w') as config_file:
                 config.write(config_file)
@@ -177,7 +158,6 @@ def plus_point(message, point):
                 start_game(message)
 
             config.set('Settings', 'total_score', str(total_score))
-            config.set('Settings', 'old_messages', str(old_messages))
 
             with open('config.ini', 'w') as config_file:
                 config.write(config_file)
@@ -197,13 +177,7 @@ def plus_point(message, point):
             keyboard.row(telebot.types.KeyboardButton(f'/left {user1}'),
                          telebot.types.KeyboardButton(f'/right {user2}'))
             keyboard.add(telebot.types.KeyboardButton(f'/step_back {smile_back}'))
-            old_message = bot.send_message(message.chat.id, status, reply_markup=keyboard)
-            old_messages[user_id] = old_message.message_id
-            config.set('Settings', 'old_messages', str(old_messages))
-
-            with open('config.ini', 'w') as config_file:
-                config.write(config_file)
-
+            bot.send_message(message.chat.id, status, reply_markup=keyboard)
     except Exception as e:
         bot.send_message(538231919, f'Plus point: {e}')
 
