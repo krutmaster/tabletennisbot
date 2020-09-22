@@ -41,29 +41,17 @@ def right_user(message):
 
 @bot.message_handler(commands=["start"])
 def start_game(message):
-    global user1_score, user2_score, user1, user2, count, part, config
+    global user1_score, user2_score, user1, user2, count
     user_id = str(message.chat.id)
 
     try:
         user1_score[user_id] = 0
         user2_score[user_id] = 0
-        split = (len(user1) - 1) * ' ' + '        '
-        status = f'{user1}   {user2}\n{user1_score[user_id]}{split}{user2_score[user_id]}\n'
-        part[user_id] = random.randint(0, 1)
-        count[user_id] = 0
-        smile = u"\U0001F3BE"
-        smile_back = u"\U0001F519"
-
-        if not part[user_id]:
-            status += f'{smile}'
-        else:
-            status += f'{len(user1) * " "}   {smile}'
-
-        keyboard = telebot.types.ReplyKeyboardMarkup()
-        keyboard.row(telebot.types.KeyboardButton(f'/left {user1}'),
-                     telebot.types.KeyboardButton(f'/right {user2}'))
-        keyboard.add(telebot.types.KeyboardButton(f'/step_back {smile_back}'))
-        bot.send_message(user_id, status, reply_markup=keyboard)
+        status = f'{user1}   {user2}'
+        keyboard = telebot.types.InlineKeyboardMarkup()
+        keyboard.row(telebot.types.InlineKeyboardButton(f'{user1}', callback_data='left_part'),
+                     telebot.types.InlineKeyboardButton(f'{user2}', callback_data='right_part'))
+        bot.send_message(user_id, f'{status}\nЧья подача?', reply_markup=keyboard)
     except Exception as e:
         bot.send_message(538231919, f'Start game: {e}')
 
@@ -124,12 +112,10 @@ def plus_point(message, point):
                     del total_score[user_id]
                 else:
                     bot.send_message(user_id, f'Счёт {total_score[user_id]}, сейчас начнётся новая партия')
-                    #bot.send_message(user_id, f'Счёт {total_score[user_id]}')
                     start_game(message)
             else:
                 total_score[user_id] = '1:0'
                 bot.send_message(user_id, f'Счёт {total_score[user_id]}, сейчас начнётся новая партия')
-                # bot.send_message(user_id, f'Счёт {total_score[user_id]}')
                 start_game(message)
 
             config.set('Settings', 'total_score', str(total_score))
@@ -149,12 +135,10 @@ def plus_point(message, point):
                     del total_score[user_id]
                 else:
                     bot.send_message(user_id, f'Счёт {total_score[user_id]}, сейчас начнётся новая партия')
-                    # bot.send_message(user_id, f'Счёт {total_score[user_id]}')
                     start_game(message)
             else:
                 total_score[user_id] = '0:1'
                 bot.send_message(user_id, f'Счёт {total_score[user_id]}, сейчас начнётся новая партия')
-                # bot.send_message(user_id, f'Счёт {total_score[user_id]}')
                 start_game(message)
 
             config.set('Settings', 'total_score', str(total_score))
@@ -198,6 +182,36 @@ def step_back(message):
         plus_point(message, last_point[user_id])
     except Exception as e:
         bot.send_message(538231919, f'Step back: {e}')
+
+
+@bot.callback_query_handler(func=lambda call: True)
+def callback_inline(call):
+    global user1_score, user2_score, user1, user2, count, part
+    user_id = str(call.message.chat.id)
+
+    if call.data[-4:] == "part":
+
+        if call.data == 'left_part':
+            part[user_id] = 0
+        else:
+            part[user_id] = 1
+
+        split = (len(user1) - 1) * ' ' + '        '
+        status = f'{user1}   {user2}\n{user1_score[user_id]}{split}{user2_score[user_id]}\n'
+        count[user_id] = 0
+        smile = u"\U0001F3BE"
+        smile_back = u"\U0001F519"
+
+        if not part[user_id]:
+            status += f'{smile}'
+        else:
+            status += f'{len(user1) * " "}   {smile}'
+
+        keyboard = telebot.types.ReplyKeyboardMarkup()
+        keyboard.row(telebot.types.KeyboardButton(f'/left {user1}'),
+                     telebot.types.KeyboardButton(f'/right {user2}'))
+        keyboard.add(telebot.types.KeyboardButton(f'/step_back {smile_back}'))
+        bot.send_message(user_id, status, reply_markup=keyboard)
 
 
 if __name__ == '__main__':
